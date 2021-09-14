@@ -2,7 +2,7 @@
 
 This repository contains the data and evaluation scripts for the paper:
 
-Verna Dankers, Elia Bruni and Dieuwke Hupkes (2021). [The paradox of the compositionality of natural language: a neural machine translation case study](https://arxiv.org/abs/2108.05885).
+"The paradox of the compositionality of natural language: a neural machine translation case study"
 
 In this paper, we present tests to evaluate compositionality "in the wild". As a case study, we consider the compositional behaviour of English-Dutch NMT models.
 This repository contains five folders, with their own READMEs:
