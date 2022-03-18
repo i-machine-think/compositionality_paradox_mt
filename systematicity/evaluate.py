@@ -2,6 +2,8 @@ import logging
 import pickle
 import numpy as np
 import editdistance
+import math
+from localism import compute_loc
 
 
 def get_conjunct(sentence):
@@ -20,7 +22,7 @@ def get_conjunct(sentence):
     if conjunction in sentence:
         conjunct = sentence.split(conjunction)[1:]
         # If the conjunct is shorter than 3 words you've got the wrong one
-        if len(sentence.split(conjunction)[0].split()) < 3:
+        if len(sentence.split(conjunction)[0].split()) < 5:
             conjunct = sentence.split(conjunction)[2:]
         conjunct = conjunction.join(conjunct)
         return True, f"MASK {conjunct}"
@@ -63,14 +65,20 @@ def compute_systematicity_s_conj(template, data_type, model):
         - s3 (float): consistency score for the S1 -> S3 condition
         - trace (dict): mistakes made by the model
     """
-    trace = dict()
+    trace_s1p = []
+    trace_s3 = []
     condition_s1p = []
     condition_s3 = []
+    all_loc_increases = []
     prefix = f"s_conj/{data_type}/systematicity_{data_type}_{template}"
 
     # English source sentences
     with open(f"{prefix}_s1_s2.en", encoding="utf-8") as f:
-        srcs = f.readlines()
+        srcs1 = f.readlines()
+    with open(f"{prefix}_s1p_s2.en", encoding="utf-8") as f:
+        srcs2 = f.readlines()
+    with open(f"{prefix}_s3_s2.en", encoding="utf-8") as f:
+        srcs3 = f.readlines()
 
     # Gather the translation of the regular setup and the two subconditions
     prefix = f"s_conj/pred_{data_type}/{model}/systematicity_{data_type}_{template}"
@@ -81,7 +89,7 @@ def compute_systematicity_s_conj(template, data_type, model):
     with open(f"{prefix}_s3_s2.nl", encoding="utf-8") as f:
         pred_s3_s2 = reorder(f.readlines())
 
-    for src, first, second, third in zip(srcs, pred_s1_s2, pred_s1p_s2, pred_s3_s2):
+    for k, (first, second, third) in enumerate(zip(pred_s1_s2, pred_s1p_s2, pred_s3_s2)):
         # Ensure that the same type of tokenisation is used 
         found1, first_conjunct = get_conjunct(first)
         found2, second_conjunct = get_conjunct(second)
@@ -95,12 +103,15 @@ def compute_systematicity_s_conj(template, data_type, model):
         condition_s3.append(first_conjunct == third_conjunct)
 
         # Collect cases where s2 different for s1' and s3 substitutions
-        if first_conjunct not in {second_conjunct, third_conjunct}:
-            trace[src.strip()] = (first_conjunct, second_conjunct, third_conjunct)
+        if first_conjunct != second_conjunct:
+            trace_s1p.append("\t".join([srcs1[k].strip(), srcs2[k].strip(), first_conjunct, second_conjunct]))
+
+        if first_conjunct != third_conjunct:
+            trace_s3.append("\t".join([srcs1[k].strip(), srcs3[k].strip(), first_conjunct, third_conjunct]))
 
     s1p = np.mean(condition_s1p)
     s3 = np.mean(condition_s3)
-    return (s1p, s3), trace
+    return (s1p, s3), trace_s1p, trace_s3
 
 
 def compute_systematicity_s_np_vp(template, data_type, model):
@@ -159,6 +170,7 @@ def compute_systematicity_s_np_vp(template, data_type, model):
 
 
 if __name__ == "__main__":
+
     results = dict()
 
     sizes = ["tiny", "small", "all"]
@@ -168,7 +180,15 @@ if __name__ == "__main__":
             for t in range(1, 11):
                 print(model, t)
                 for data_type in ["synthetic", "semi_natural", "natural"]:
-                    score, trace_conj = compute_systematicity_s_conj(t, data_type, model)
+                    score, trace_s1p, trace_s3 = compute_systematicity_s_conj(t, data_type, model)
+                    with open(f"traces/model={size}_data={data_type}_template={t}_seed={seed}_s1prime.tsv", 'w') as f:
+                        f.write("source\tsource_s1->s1prime\tconjunct_translation\tconjunct_translation_s1->s1prime\n")
+                        for line in trace_s1p:
+                            f.write(line.replace("MASK ", "") + "\n")
+                    with open(f"traces/model={size}_data={data_type}_template={t}_seed={seed}_s3.tsv", 'w') as f:
+                        f.write("source\tsource_s1->s1prime\tconjunct_translation\tconjunct_translation_s1->s3\n")
+                        for line in trace_s3:
+                            f.write(line.replace("MASK ", "") + "\n")
                     results[(model, seed, "s_conj", data_type, t)] = score
                 
                 for data_type in ["synthetic", "semi_natural"]:
