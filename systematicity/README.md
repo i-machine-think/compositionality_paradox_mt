@@ -2,7 +2,7 @@
 
 This folder contains the data for the systematicity tests, which is described in section 4.1 of the paper.
 
-This folder also contains a script for evaluation ([evaluate_systematicity.py](evaluate_systematicity.py)), a notebook to visualise results ([visualise.ipynb](visualise.ipynb)), and a pickled file of our systematicity results for the paper.
+This folder also contains a script for evaluation ([evaluate.py](evaluate.py)), a notebook to visualise results ([visualise.ipynb](visualise.ipynb)), and a pickled file of our systematicity results for the paper.
 
 ## Systematicity setups
 
