@@ -121,8 +121,7 @@ def main(model, seed, data_type):
                             idiom = idioms[i]
                             prd_label = classifier(idiom, prd)
                             scores.append(prd_label in ["word-by-word", "copied"])
-                    #except:
-                    #    print(f"pred_{data_type}/{model}/checkpoint{checkpoint}/overgeneralisation_{data_type}_{t}_{i}.nl")
+
             x.append(checkpoint)
             y.append(np.mean(scores))
         all_x.append(x)
