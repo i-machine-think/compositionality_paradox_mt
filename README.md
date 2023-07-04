@@ -1,8 +1,15 @@
 # The paradox of the compositionality of natural language: a neural machine translation case study
 
-This repository contains the data and evaluation scripts for the paper:
-
-"The paradox of the compositionality of natural language: a neural machine translation case study"
+This repository contains the data and evaluation scripts for the following paper:
+```
+@inproceedings{dankers2022paradox,
+  title={The Paradox of the Compositionality of Natural Language: A Neural Machine Translation Case Study},
+  author={Dankers, Verna and Bruni, Elia and Hupkes, Dieuwke},
+  booktitle={Proceedings of the 60th Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers)},
+  pages={4154--4175},
+  year={2022}
+}
+```
 
 In this paper, we present tests to evaluate compositionality "in the wild". As a case study, we consider the compositional behaviour of English-Dutch NMT models.
 This repository contains five folders, with their own READMEs:
